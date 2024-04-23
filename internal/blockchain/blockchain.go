@@ -1,4 +1,4 @@
-package main
+package blockchain
 
 import (
 	"crypto/sha256"
@@ -76,7 +76,7 @@ func (b *Blockchain) addBlock(from, to string, amount float64) {
 }
 
 // check the validity of the blockchain. No transactions should be tampered with
-func (b Blockchain) isValid() bool {
+func (b *Blockchain) isValid() bool {
 	// skip genesis block because it does not have a previous block
 	for i := range b.chain[1:] {
 		previousBlock := b.chain[i]
@@ -91,19 +91,19 @@ func (b Blockchain) isValid() bool {
 	return true
 }
 
-// using the blockchain to make transactions with our main function
+// check the validity of a new block
+func IsValidNewBlock(newBlock, previousBlock Block) bool {
+	// Check if the previous hash matches
+	if previousBlock.hash != newBlock.previousHash {
+		return false
+	}
 
-func main() {
-	// create a new blockchain instance with a mining difficulty of 2
-	blockchain := CreateBlockchain(2)
+	// Check if the hash of the new block is correct
+	if newBlock.hash != newBlock.calculateHash() {
+		return false
+	}
 
-	// record transactions on the blockchain for Alice, Bob, and John
-	blockchain.addBlock("Alice", "Bob", 5)
-	blockchain.addBlock("John", "Bob", 2)
-
-	// check if the blockchain is valid; expecting true
-	fmt.Println(blockchain.isValid())
-	fmt.Println(blockchain)
+	return true
 }
 
 // TODO: create a peer 2 peer network to connect nodes
