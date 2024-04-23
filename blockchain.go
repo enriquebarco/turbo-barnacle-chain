@@ -105,3 +105,7 @@ func main() {
 	fmt.Println(blockchain.isValid())
 	fmt.Println(blockchain)
 }
+
+// TODO: create a peer 2 peer network to connect nodes
+// TODO: implement a consensus algorithm
+// TODO: create security countermeasures
