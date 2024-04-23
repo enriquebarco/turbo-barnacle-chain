@@ -25,6 +25,6 @@ func main() {
 		go p2p.ConnectToNode(*remoteNode, fmt.Sprintf("Hello from node %s!", *localPort))
 	}
 
-	// Prevent the main program from exiting immediately
-	select {}
+	// Start handling user input to send messages to other nodes
+	p2p.HandleUserInput(&bc, *remoteNode)
 }
