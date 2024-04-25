@@ -56,7 +56,7 @@ func CreateBlockchain(difficulty int) Blockchain {
 }
 
 // adding new blocks to the blockchain
-func (b *Blockchain) addBlock(from, to string, amount float64) {
+func (b *Blockchain) AddBlock(from, to string, amount float64) {
 	// collect details of a transaction (sender, receiver, and transfer amount)
 	blockData := map[string]interface{}{
 		"from":   from,
