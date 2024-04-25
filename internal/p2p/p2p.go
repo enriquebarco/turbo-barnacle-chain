@@ -44,7 +44,7 @@ var commands = map[string]Command{
 }
 
 // StartServer starts the P2P server and listens for incoming connections.
-func StartServer(nodeID string, bc *blockchain.Blockchain) {
+func StartServer(nodeID string, nodeName string, bc *blockchain.Blockchain) {
 	ln, err := net.Listen("tcp", ":"+nodeID)
 	if err != nil {
 		log.Fatal(err)
@@ -60,22 +60,30 @@ func StartServer(nodeID string, bc *blockchain.Blockchain) {
 			continue
 		}
 
-		go handleConnection(conn, bc)
+		go handleConnection(conn, bc, nodeName)
 	}
 }
 
 // handleConnection deals with incoming data.
-func handleConnection(conn net.Conn, bc *blockchain.Blockchain) {
+func handleConnection(conn net.Conn, bc *blockchain.Blockchain, nodeName string) {
 	defer conn.Close()
-
-	address := conn.RemoteAddr().String()
-	log.Printf("New connection established from %s\n", address)
+	// log.Printf("New connection established from %s\n", nodeName)
 
 	scanner := bufio.NewScanner(conn)
 	for scanner.Scan() {
-		message := scanner.Text()
-		log.Printf("Received from %s: %s\n", address, message)
+		// full message
+		fullMessage := scanner.Text()
+		messageParts := strings.SplitN(fullMessage, ":", 2) // Split to get the sender's name and the message
 
+		if len(messageParts) != 2 {
+			log.Printf("Invalid message format received: %s\n", fullMessage)
+			continue
+		}
+
+		senderName := messageParts[0]
+		message := messageParts[1]
+
+		fmt.Printf("\033[32m%s: %s\033[0m\n", senderName, message)
 		// detect if a user has sent a valid txn, add it to the blockchain
 		if strings.HasPrefix(message, "send:") {
 			// check that a valid transaction happened on the chain by checking the chain is still valid
@@ -97,7 +105,7 @@ func handleConnection(conn net.Conn, bc *blockchain.Blockchain) {
 }
 
 // ConnectToNode connects to a specified node and sends a message
-func ConnectToNode(nodeAddress, message string) {
+func ConnectToNode(nodeAddress, nodeName, message string) {
 	conn, err := net.Dial("tcp", nodeAddress)
 	if err != nil {
 		log.Printf("Error connecting to node at %s: %v\n", nodeAddress, err)
@@ -105,12 +113,11 @@ func ConnectToNode(nodeAddress, message string) {
 	}
 	defer conn.Close()
 
-	fmt.Fprintln(conn, message)
-	log.Printf("Sent message to %s: %s\n", nodeAddress, message)
+	fmt.Fprintf(conn, "%s: %s\n", nodeName, message)
 }
 
 // HandleUserInput allows the user to input messages to be sent to the network.
-func HandleUserInput(bc *blockchain.Blockchain, nodeAddress string) {
+func HandleUserInput(bc *blockchain.Blockchain, nodeAddress string, nodeName string) {
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("> ")
@@ -128,14 +135,14 @@ func HandleUserInput(bc *blockchain.Blockchain, nodeAddress string) {
 			parts := strings.Split(details, ",")
 			if len(parts) == 3 {
 				if nodeAddress != "" {
-					ConnectToNode(nodeAddress, "TXN:"+details)
+					ConnectToNode(nodeAddress, nodeName, "TXN:"+details)
 				}
 				continue
 			}
 			fmt.Println("Invalid command format. Use: send from,to,amount (e.g. send from mel,kike,10)")
 		}
 		if nodeAddress != "" {
-			ConnectToNode(nodeAddress, message)
+			ConnectToNode(nodeAddress, nodeName, message)
 		} else {
 			fmt.Println("No remote node address specified. Unable to send the message.")
 		}
