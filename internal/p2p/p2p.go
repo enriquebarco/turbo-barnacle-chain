@@ -60,6 +60,7 @@ func StartServer(nodeID string, nodeName string, bc *blockchain.Blockchain) {
 			continue
 		}
 
+		// we create a new go routine so that we can handle multiple connections simultaneously, each independent from the others.
 		go handleConnection(conn, bc)
 	}
 }
@@ -106,6 +107,7 @@ func handleConnection(conn net.Conn, bc *blockchain.Blockchain) {
 
 // ConnectToNode connects to a specified node and sends a message
 func ConnectToNode(nodeAddress, nodeName, message string) {
+	// establish a tcp connection
 	conn, err := net.Dial("tcp", nodeAddress)
 	if err != nil {
 		log.Printf("Error connecting to node at %s: %v\n", nodeAddress, err)
@@ -118,7 +120,10 @@ func ConnectToNode(nodeAddress, nodeName, message string) {
 
 // HandleUserInput allows the user to input messages to be sent to the network.
 func HandleUserInput(bc *blockchain.Blockchain, nodeAddress string, nodeName string) {
+	// create a buffered reader that reads from the standard input
 	reader := bufio.NewReader(os.Stdin)
+
+	// run an infinite for loop that continous reading input from the user until the program is terminated
 	for {
 		fmt.Print("> ")
 		input, err := reader.ReadString('\n')
@@ -130,7 +135,7 @@ func HandleUserInput(bc *blockchain.Blockchain, nodeAddress string, nodeName str
 		message := strings.TrimSpace(input)
 		// handle a user specifically trying to send a transaction on the blockchain
 		if strings.HasPrefix(message, "send") {
-			// the expected format is send from,to,amount
+			// the expected format is -- send from,to,amount
 			details := message[5:]
 			parts := strings.Split(details, ",")
 			if len(parts) == 3 {
@@ -139,8 +144,9 @@ func HandleUserInput(bc *blockchain.Blockchain, nodeAddress string, nodeName str
 				}
 				continue
 			}
-			fmt.Println("Invalid command format. Use: send from,to,amount (e.g. send from mel,kike,10)")
+			fmt.Println("Invalid command format. Use: send from,to,amount (e.g. send mel,kike,10)")
 		}
+		// if not a specific blockchain message, this handles it
 		if nodeAddress != "" {
 			ConnectToNode(nodeAddress, nodeName, message)
 		} else {

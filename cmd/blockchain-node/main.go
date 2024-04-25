@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// Parse command-line arguments
-	nodeName := flag.String("name", "Node", "the name you identify with")
+	localNodeName := flag.String("name", "Node", "the name you identify with")
 	localPort := flag.String("port", "3000", "port to listen on")
 	remoteNodeIP := flag.String("connect", "", "IP:port of remote node to connect to")
 	flag.Parse()
@@ -18,14 +18,14 @@ func main() {
 	// Initialize the blockchain
 	bc := blockchain.CreateBlockchain(2)
 
-	// Start the P2P server on the specified port
-	go p2p.StartServer(*localPort, *nodeName, &bc)
+	// Start the P2P server on the specified port, this all deals with incoming connections
+	go p2p.StartServer(*localPort, *localNodeName, &bc)
 
-	// If a remote node address is provided, connect to it
-	if *remoteNodeIP != "" {
-		go p2p.ConnectToNode(*remoteNodeIP, *nodeName, fmt.Sprintf("Hello from node %s!", *remoteNodeIP))
-	}
+	// Connect to the IP addressed that was specified
+	go p2p.ConnectToNode(*remoteNodeIP, *localNodeName, fmt.Sprintf("Hello from node %s!", *remoteNodeIP))
 
-	// Start handling user input to send messages to other nodes
-	p2p.HandleUserInput(&bc, *remoteNodeIP, *nodeName)
+	// handle user input to send messages to other nodes
+	go p2p.HandleUserInput(&bc, *remoteNodeIP, *localNodeName)
+
+	select {} // block main thread from closing
 }
