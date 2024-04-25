@@ -106,6 +106,5 @@ func IsValidNewBlock(newBlock, previousBlock Block) bool {
 	return true
 }
 
-// TODO: create a peer 2 peer network to connect nodes
 // TODO: implement a consensus algorithm
 // TODO: create security countermeasures

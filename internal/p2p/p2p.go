@@ -60,12 +60,12 @@ func StartServer(nodeID string, nodeName string, bc *blockchain.Blockchain) {
 			continue
 		}
 
-		go handleConnection(conn, bc, nodeName)
+		go handleConnection(conn, bc)
 	}
 }
 
 // handleConnection deals with incoming data.
-func handleConnection(conn net.Conn, bc *blockchain.Blockchain, nodeName string) {
+func handleConnection(conn net.Conn, bc *blockchain.Blockchain) {
 	defer conn.Close()
 	// log.Printf("New connection established from %s\n", nodeName)
 
