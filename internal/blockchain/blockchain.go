@@ -14,7 +14,7 @@ type Block struct {
 	hash         string
 	previousHash string
 	timestamp    time.Time
-	pow          int
+	nonce        int
 }
 
 type Blockchain struct {
@@ -26,8 +26,8 @@ type Blockchain struct {
 func (b Block) calculateHash() string {
 	// convert block data into json
 	data, _ := json.Marshal(b.data)
-	// Concatenate the previous block’s hash, and the current block’s data, timestamp, and PoW
-	blockData := b.previousHash + string(data) + b.timestamp.String() + strconv.Itoa(b.pow)
+	// Concatenate the previous block’s hash, and the current block’s data, timestamp, and nonce
+	blockData := b.previousHash + string(data) + b.timestamp.String() + strconv.Itoa(b.nonce)
 	// hash with sha256 algo
 	blockHash := sha256.Sum256([]byte(blockData))
 	// return the base 16 hash as a string
@@ -37,7 +37,7 @@ func (b Block) calculateHash() string {
 func (b *Block) mine(difficulty int) {
 	// continue to change the proof of work value of the current block until we satisfiy our mining condition of (starting zeros > difficulty)
 	for !strings.HasPrefix(b.hash, strings.Repeat("0", difficulty)) {
-		b.pow++
+		b.nonce++
 		b.hash = b.calculateHash()
 	}
 }
@@ -70,7 +70,7 @@ func (b *Blockchain) AddBlock(from, to string, amount float64) {
 		previousHash: lastBlock.hash,
 		timestamp:    time.Now(),
 	}
-	// mine the new block with the previous block hash, current block data, and generated PoW
+	// mine the new block with the previous block hash, current block data, and generated nonce
 	newBlock.mine(b.difficulty)
 	b.chain = append(b.chain, newBlock)
 }

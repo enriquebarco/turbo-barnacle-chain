@@ -86,7 +86,7 @@ func handleConnection(conn net.Conn, bc *blockchain.Blockchain) {
 
 		fmt.Printf("\033[32m%s: %s\033[0m\n", senderName, message)
 		// detect if a user has sent a valid txn, add it to the blockchain
-		if strings.HasPrefix(message, "send:") {
+		if strings.HasPrefix(message, "TXN:") {
 			// check that a valid transaction happened on the chain by checking the chain is still valid
 			// print the entire block chain
 			parts := strings.Split(message[4:], ",")
