@@ -1,5 +1,5 @@
 # turbo-barnacle-chain
-a simple blockchain built in go
+A p2p network that allows users to chat. In the process of integrating a simple blockchain
 
 ![turbo-barnacle-chain](./turbo-barnacle-chain.webp)
 
