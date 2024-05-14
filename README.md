@@ -19,7 +19,7 @@ Ensure you have Go installed on your machine. If not, make follow the instructio
  ip=$(ifconfig en0 | grep inet | grep -v inet6 | awk '{print $2}'); echo $ip; echo $ip | pbcopy
 ```
 
-3. After cloning the repo, run the main function from the blockchain-node directory
+3. After cloning the repo, run the main function
 ```bash
 cd cmd/blockchain-node/
 go run . -port 3000 -name firstNode -connect <YourFriendsIPAddress>:3000
