@@ -25,7 +25,7 @@ cd cmd/blockchain-node/
 go run . -port 3000 -name firstNode -connect <YourFriendsIPAddress>:3000
 ```
 
-3. If you want to test out how two nodes would connect locally, open up a new terminal and run the following bash script in the root directory of the project:
+3. (Optional) If you want to test out how two nodes would connect locally, open up a new terminal and run the following bash script in the root directory of the project:
 ```bash
 cd cmd/blockchain-node/
 go run . -port 3000 -name firstNode -connect localhost:3001
