@@ -10,7 +10,7 @@ import (
 )
 
 type Block struct {
-	data         map[string]interface{}
+	Data         map[string]interface{}
 	hash         string
 	previousHash string
 	timestamp    time.Time
@@ -19,13 +19,13 @@ type Block struct {
 
 type Blockchain struct {
 	genesisBlock Block
-	chain        []Block
+	Chain        []Block
 	difficulty   int
 }
 
 func (b Block) calculateHash() string {
 	// convert block data into json
-	data, _ := json.Marshal(b.data)
+	data, _ := json.Marshal(b.Data)
 	// Concatenate the previous block’s hash, and the current block’s data, timestamp, and nonce
 	blockData := b.previousHash + string(data) + b.timestamp.String() + strconv.Itoa(b.nonce)
 	// hash with sha256 algo
@@ -64,23 +64,23 @@ func (b *Blockchain) AddBlock(from, to string, amount float64) {
 		"amount": amount,
 	}
 	// create a new block with the transaction details
-	lastBlock := b.chain[len(b.chain)-1]
+	lastBlock := b.Chain[len(b.Chain)-1]
 	newBlock := Block{
-		data:         blockData,
+		Data:         blockData,
 		previousHash: lastBlock.hash,
 		timestamp:    time.Now(),
 	}
 	// mine the new block with the previous block hash, current block data, and generated nonce
 	newBlock.mine(b.difficulty)
-	b.chain = append(b.chain, newBlock)
+	b.Chain = append(b.Chain, newBlock)
 }
 
 // check the validity of the blockchain. No transactions should be tampered with
 func (b *Blockchain) isValid() bool {
 	// skip genesis block because it does not have a previous block
-	for i := range b.chain[1:] {
-		previousBlock := b.chain[i]
-		currentBlock := b.chain[i+1]
+	for i := range b.Chain[1:] {
+		previousBlock := b.Chain[i]
+		currentBlock := b.Chain[i+1]
 		// first, recalculate the hash of the block and compare it to the stored hash value
 		// second, check if the previous hash value saved in this block is equal to its previous hash
 		// if a block has been tampered with, this check willf fail since the hash will change

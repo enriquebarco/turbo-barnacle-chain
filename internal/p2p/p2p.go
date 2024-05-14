@@ -22,7 +22,7 @@ type Command struct {
 	Execute func(args []string, bc *blockchain.Blockchain, conn net.Conn)
 }
 
-var commands = map[string]Command{
+var userCommands = map[string]Command{
 	"send": {
 		Execute: func(args []string, bc *blockchain.Blockchain, conn net.Conn) {
 			if len(args) != 3 {
@@ -34,13 +34,14 @@ var commands = map[string]Command{
 				fmt.Println("Invalid amount:", args[2])
 				return
 			}
-			bc.AddBlock(args[0], args[1], amount)
+			// Format the message as a transaction
+			message := fmt.Sprintf("TXN:%s,%s,%f", args[0], args[1], amount)
 			if conn != nil {
-				fmt.Fprintf(conn, "TXN:%s,%s,%f\n", args[0], args[1], amount)
+				fmt.Fprintf(conn, "%s\n", message)
 			}
 		},
 	},
-	// Add more commands as needed
+	// add more commands as needed
 }
 
 // StartServer starts the P2P server and listens for incoming connections.
@@ -96,7 +97,17 @@ func handleConnection(conn net.Conn, bc *blockchain.Blockchain) {
 				amount, err := strconv.ParseFloat(parts[2], 64)
 				if err == nil {
 					bc.AddBlock(from, to, amount)
+					fmt.Println("New block received and added to the blockchain")
+					fmt.Printf("From: %s, To: %s, Amount: %f\n", from, to, amount)
 					log.Printf("Block added for transaction from %s to %s of %f", from, to, amount)
+
+					fmt.Println("Current Blockchain:")
+					for i, block := range bc.Chain {
+						if i == 0 {
+							continue // Skip the genesis block
+						}
+						fmt.Printf("Data: %v\n", block.Data)
+					}
 					continue
 				}
 			}
@@ -115,7 +126,8 @@ func ConnectToNode(nodeAddress, nodeName, message string) {
 	}
 	defer conn.Close()
 
-	fmt.Fprintf(conn, "%s: %s\n", nodeName, message)
+	formattedMessage := fmt.Sprintf("%s:%s", nodeName, message)
+	fmt.Fprintf(conn, "%s\n", formattedMessage)
 }
 
 // HandleUserInput allows the user to input messages to be sent to the network.
@@ -139,8 +151,30 @@ func HandleUserInput(bc *blockchain.Blockchain, nodeAddress string, nodeName str
 			details := message[5:]
 			parts := strings.Split(details, ",")
 			if len(parts) == 3 {
+				from := parts[0]
+				to := parts[1]
+				amount, err := strconv.ParseFloat(parts[2], 64)
+				if err != nil {
+					fmt.Println("Invalid amount:", parts[2])
+					continue
+				}
+
+				// Add the block to the local blockchain
+				bc.AddBlock(from, to, amount)
+				fmt.Println("New block added to the blockchain")
+				fmt.Printf("From: %s, To: %s, Amount: %f\n", from, to, amount)
+				fmt.Println("Current Blockchain:")
+				for i, block := range bc.Chain {
+					if i == 0 {
+						continue // Skip the genesis block
+					}
+					fmt.Printf("Data: %v\n", block.Data)
+				}
+
+				// Broadcast the new block to the connected node
 				if nodeAddress != "" {
-					ConnectToNode(nodeAddress, nodeName, "TXN:"+details)
+					message := fmt.Sprintf("TXN:%s,%s,%f", from, to, amount)
+					ConnectToNode(nodeAddress, nodeName, message)
 				}
 				continue
 			}
