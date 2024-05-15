@@ -87,7 +87,7 @@ func (bc *Blockchain) ReceiveBlock(newBlock Block) error {
 }
 
 // check the validity of the blockchain. No transactions should be tampered with
-func (b *Blockchain) isValid() bool {
+func (b *Blockchain) IsValid() bool {
 	// skip genesis block because it does not have a previous block
 	for i := range b.Chain[1:] {
 		previousBlock := b.Chain[i]

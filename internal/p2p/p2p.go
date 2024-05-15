@@ -20,14 +20,14 @@ type TransactionMessage struct {
 }
 
 // StartServer starts the P2P server and listens for incoming connections.
-func StartServer(nodeID string, nodeName string, bc *blockchain.Blockchain) {
-	ln, err := net.Listen("tcp", ":"+nodeID)
+func StartServer(localPort string, nodeName string, bc *blockchain.Blockchain) {
+	ln, err := net.Listen("tcp", ":"+localPort)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer ln.Close()
 
-	log.Printf("Listening for P2P connections on %s...\n", nodeID)
+	log.Printf("Listening for P2P connections on %s...\n", localPort)
 
 	for {
 		conn, err := ln.Accept()
@@ -37,12 +37,12 @@ func StartServer(nodeID string, nodeName string, bc *blockchain.Blockchain) {
 		}
 
 		// we create a new go routine so that we can handle multiple connections simultaneously, each independent from the others.
-		go handleConnection(conn, bc)
+		go handleConnection(conn, bc, nodeName, localPort)
 	}
 }
 
 // handleConnection deals with incoming data.
-func handleConnection(conn net.Conn, bc *blockchain.Blockchain) {
+func handleConnection(conn net.Conn, bc *blockchain.Blockchain, nodeName, knownPort string) {
 	defer conn.Close()
 	// log.Printf("New connection established from %s\n", nodeName)
 
@@ -50,22 +50,48 @@ func handleConnection(conn net.Conn, bc *blockchain.Blockchain) {
 	for scanner.Scan() {
 		// full message
 		fullMessage := scanner.Text()
-		messageParts := strings.SplitN(fullMessage, ":", 2) // Split to get the sender's name and the message
+		messageParts := strings.SplitN(fullMessage, ":", 3) // Split to get the sender's name, optional message type, and the message
 
-		if len(messageParts) != 2 {
+		if len(messageParts) < 2 {
 			log.Printf("Invalid message format received: %s\n", fullMessage)
 			continue
 		}
 
 		senderName := messageParts[0]
 		message := messageParts[1]
+		var messageType string
+		if len(messageParts) == 3 {
+			messageType = messageParts[1]
+			message = messageParts[2]
+		} else {
+			messageType = "MESSAGE"
+		}
 
-		fmt.Printf("\033[32m%s: %s\033[0m\n", senderName, message)
-		// detect if a user has sent a valid txn, add it to the blockchain
-		if strings.HasPrefix(message, "BLOCK:") {
-			blockJson := message[6:]
+		fmt.Printf("\033[32m%s [%s]: %s\033[0m\n", senderName, messageType, message)
+
+		switch messageType {
+		case "REQUEST_CHAIN":
+			fmt.Println("Remote node has requested our blockchain")
+			// send the blockchain to the remote node
+			chainJson, err := json.Marshal(bc.Chain)
+			if err != nil {
+				log.Printf("Failed to marshal blockchain: %v\n", err)
+				return
+			}
+			fmt.Println("Sending blockchain to remote node...")
+			remoteAddr := conn.RemoteAddr().String()
+			host, _, err := net.SplitHostPort(remoteAddr)
+			if err != nil {
+				log.Printf("Failed to split remote address: %v\n", err)
+				return
+			}
+			nodeAddress := net.JoinHostPort(host, knownPort)
+			if err := ConnectToNode(nodeAddress, nodeName, "RECIEVE_CHAIN", string(chainJson)); err != nil {
+				log.Printf("Failed to send blockchain: %v\n", err)
+			}
+		case "RECIEVE_BLOCK":
 			var newBlock blockchain.Block
-			err := json.Unmarshal([]byte(blockJson), &newBlock)
+			err := json.Unmarshal([]byte(message), &newBlock)
 			if err != nil {
 				log.Printf("Failed to unmarshal block: %v\n", err)
 				return
@@ -79,22 +105,38 @@ func handleConnection(conn net.Conn, bc *blockchain.Blockchain) {
 				fmt.Println("Current Blockchain:")
 				bc.PrintChain()
 			}
+		case "MESSAGE":
+			// fmt.Printf("\033[32m%s: %s\033[0m\n", senderName, message)
+		default:
+			fmt.Printf("Unknown message type: %s\n", messageType)
 		}
 	}
 }
 
 // ConnectToNode connects to a specified node and sends a message
-func ConnectToNode(nodeAddress, nodeName, message string) {
+func ConnectToNode(nodeAddress, nodeName, messageType string, message string) error {
 	// establish a tcp connection
 	conn, err := net.Dial("tcp", nodeAddress)
 	if err != nil {
 		log.Printf("Error connecting to node at %s: %v\n", nodeAddress, err)
-		return
+		return err
 	}
 	defer conn.Close()
 
-	formattedMessage := fmt.Sprintf("%s:%s", nodeName, message)
-	fmt.Fprintf(conn, "%s\n", formattedMessage)
+	var formattedMessage string
+	if messageType == "" {
+		formattedMessage = fmt.Sprintf("%s:%s", nodeName, message)
+	} else {
+		formattedMessage = fmt.Sprintf("%s:%s:%s", nodeName, messageType, message)
+	}
+
+	_, err = fmt.Fprintf(conn, "%s\n", formattedMessage)
+	if err != nil {
+		log.Printf("Error sending message to node at %s: %v\n", nodeAddress, err)
+		return err
+	}
+
+	return nil
 }
 
 // HandleUserInput allows the user to input messages to be sent to the network.
@@ -142,16 +184,31 @@ func HandleUserInput(bc *blockchain.Blockchain, nodeAddress string, nodeName str
 
 				if nodeAddress != "" {
 					fmt.Println("Broadcasting new block to the network...")
-					message := fmt.Sprintf("BLOCK:%s", blockJson)
-					ConnectToNode(nodeAddress, nodeName, message)
+					message := string(blockJson)
+					if err := ConnectToNode(nodeAddress, nodeName, "RECIEVE_BLOCK", message); err != nil {
+						fmt.Println("Failed to broadcast block:", err)
+					}
 				}
 				continue
 			}
 			fmt.Println("Invalid command format. Use: send from,to,amount (e.g. send mel,kike,10)")
 		}
+		// handle requesting the blockchain
+		if strings.HasPrefix(message, "request_chain") {
+			fmt.Println("Requesting latest blockchain from network...")
+			if nodeAddress != "" {
+				if err := ConnectToNode(nodeAddress, nodeName, "REQUEST_CHAIN", ""); err != nil {
+					fmt.Println("Failed to request blockchain:", err)
+				}
+			} else {
+				fmt.Println("No remote node address specified. Unable to request the blockchain.")
+			}
+		}
 		// if not a specific blockchain message, this handles it
 		if nodeAddress != "" {
-			ConnectToNode(nodeAddress, nodeName, message)
+			if err := ConnectToNode(nodeAddress, nodeName, "MESSAGE", message); err != nil {
+				fmt.Println("Failed to send message:", err)
+			}
 		} else {
 			fmt.Println("No remote node address specified. Unable to send the message.")
 		}

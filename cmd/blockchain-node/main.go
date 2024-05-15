@@ -21,8 +21,8 @@ func main() {
 	// Start the P2P server on the specified port, this all deals with incoming connections
 	go p2p.StartServer(*localPort, *localNodeName, &bc)
 
-	// Connect to the IP addressed that was specified
-	go p2p.ConnectToNode(*remoteNodeIP, *localNodeName, fmt.Sprintf("Hello from node %s!", *remoteNodeIP))
+	// Connect to the IP addressed that was specified and say hello
+	go p2p.ConnectToNode(*remoteNodeIP, *localNodeName, "REQUEST_CHAIN", fmt.Sprintf("Hello from node %s!", *remoteNodeIP))
 
 	// handle user input to send messages to other nodes
 	go p2p.HandleUserInput(&bc, *remoteNodeIP, *localNodeName)
