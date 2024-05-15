@@ -70,6 +70,7 @@ To create a transaction, which generates a new block, a user must specify the fo
 When a node mines a new block, it broadcasts it to the network. The node that recieves the block validates it by
 - Ensuring the previous block's hash matches the new block's `previousBlockHash`: `previousBlock.Hash == newBlock.PreviousHash`
 - ensuring the new block's hash is valid by recalculating the hash given the new block data `bash newBlock.Hash == newBlock.calculateHash()`
+
 If the block is valid, it is added to the blockchain
 
 An example of a succesful block being recieved, validated, and added would be:
