@@ -57,9 +57,9 @@ To create a transaction, which generates a new block, a user must specify the fo
 >
 >// once the block is added, it will give you a confirmation such as:
 >New block added to the blockchain
->From: kike, To: mel, Amount: 10.000000
 >Current Blockchain:
->Data: map[amount:10 from:kike to:mel]
+>Transaction: map[amount:10 from:kike to:mel], Nonce: 7
+>Broadcasting new block to the network...
 >```
 >
 > Once the block has been added to the local blockchain, it will broadcast the new block to the
@@ -67,4 +67,17 @@ To create a transaction, which generates a new block, a user must specify the fo
 
 ### Updating the blockchain based on broadcasted blocks
 
-When a node mines a new block, it broadcasts it as a form of a transaction 
+When a node mines a new block, it broadcasts it to the network. The node that recieves the block validates it by
+- ensuring the previous blocks hash matches the new blocks previousBlockHash (previousBlock.Hash == newBlock.PreviousHash)
+- ensuring the new block's hash is valid by recalculating the hash given the new block data (newBlock.Hash != newBlock.calculateHash() )
+If the block is valid, it is added to the blockchain
+
+An example of a succesful block being recieved, validated, and added would be:
+>
+>```bash
+> firstNode: BLOCK:{"Data":{"amount":10,"from":"kike","to":"mel"},"Hash":"0014f8f216f57293931ff2d90f4748e9b08e5cbfe8414594601b85263b96dfb6","PreviousHash":"0 Hello Mel","Timestamp":"2024-05-15T03:38:59.374901Z","Nonce":7}
+> New block added to the blockchain
+> From: kike, To: mel, Amount: 10.000000
+>Current Blockchain:
+>Transaction: map[amount:10 from:kike to:mel], Nonce: 7
+>```
