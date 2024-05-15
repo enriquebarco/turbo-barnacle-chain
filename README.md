@@ -8,8 +8,13 @@ A p2p network that allows users to chat. In the process of integrating a simple 
 Ensure you have Go installed on your machine. If not, make follow the instructions of the [official documentation](https://go.dev/doc/install)
 
 1. Clone the repo either through ssh or https
-2. Create a build
 ```bash
+// the following example is for ssh
+git clone:git@github.com:enriquebarco/turbo-barnacle-chain.git
+```
+3. Go to the root directory and create a build
+```bash
+cd turbo-barnacle-chain
 go build -o turbo-barnacle-chain ./cmd/blockchain-node
 ```
 
