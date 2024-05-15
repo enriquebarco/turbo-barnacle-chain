@@ -61,3 +61,10 @@ To create a transaction, which generates a new block, a user must specify the fo
 >Current Blockchain:
 >Data: map[amount:10 from:kike to:mel]
 >```
+>
+> Once the block has been added to the local blockchain, it will broadcast the new block to the
+> connected node
+
+### Updating the blockchain based on broadcasted blocks
+
+When a node mines a new block, it broadcasts it as a form of a transaction 
