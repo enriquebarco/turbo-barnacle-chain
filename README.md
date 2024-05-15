@@ -36,6 +36,10 @@ cd cmd/blockchain-node/
 go run . -port 3001 -connect localhost:3000 -name secondNode
 ```
 
+## p2p
+
+The P2P network implementation involves nodes connecting via TCP connections. Each message is sent over a new TCP connection, which is closed after the message is transmitted.
+
 ## Blockchain 
 
 This simple blockchain uses Proof of Work (PoW) as its consensus mechanism. During mining, the nonce is incremented until the block's hash meets the difficulty requirement, ensuring computational effort is required to add a new block.
