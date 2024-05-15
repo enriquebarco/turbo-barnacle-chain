@@ -45,12 +45,13 @@ This simple blockchain uses Proof of Work (PoW) as its consensus mechanism. Duri
 To create a transaction, which generates a new block, a user must specify the following syntax:
 
 > send <personSendingTransaction>,<personReceivingTransaction>,<amount>
-
+>
 > for example, the following would be a valid transaction:
-
+>
 > 
 >```bash
 >send kike,mel,10
+>
 >// once the block is added, it will give you a confirmation such as:
 >New block added to the blockchain
 >From: kike, To: mel, Amount: 10.000000
