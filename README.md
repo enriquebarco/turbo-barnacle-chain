@@ -9,7 +9,7 @@ Ensure you have Go installed on your machine. If not, make follow the instructio
 
 1. Clone the repo either through ssh or https
 ```bash
-// the following example is for ssh
+# the following example is for ssh
 git clone:git@github.com:enriquebarco/turbo-barnacle-chain.git
 ```
 3. Go to the root directory and create a build
@@ -67,7 +67,7 @@ To create a transaction, which generates a new block, a user must specify the fo
 >```bash
 >send kike,mel,10
 >
->// once the block is added, it will give you a confirmation such as:
+># once the block is added, it will give you a confirmation such as:
 >New block added to the blockchain
 >Current Blockchain:
 >Transaction: map[amount:10 from:kike to:mel], Nonce: 7
