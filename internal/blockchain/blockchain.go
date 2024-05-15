@@ -87,11 +87,11 @@ func (bc *Blockchain) ReceiveBlock(newBlock Block) error {
 }
 
 // check the validity of the blockchain. No transactions should be tampered with
-func (b *Blockchain) IsValid() bool {
+func isValidChain(chain []Block) bool {
 	// skip genesis block because it does not have a previous block
-	for i := range b.Chain[1:] {
-		previousBlock := b.Chain[i]
-		currentBlock := b.Chain[i+1]
+	for i := range chain[1:] {
+		previousBlock := chain[i]
+		currentBlock := chain[i+1]
 		// first, recalculate the hash of the block and compare it to the stored hash value
 		// second, check if the previous hash value saved in this block is equal to its previous hash
 		// if a block has been tampered with, this check willf fail since the hash will change
@@ -117,6 +117,7 @@ func isValidNewBlock(newBlock, previousBlock Block) error {
 	return nil
 }
 
+// print the chain to the console
 func (bc *Blockchain) PrintChain() {
 	for i, block := range bc.Chain {
 		if i == 0 {
@@ -124,4 +125,19 @@ func (bc *Blockchain) PrintChain() {
 		}
 		fmt.Printf("Transaction: %v, Nonce: %d\n", block.Data, block.Nonce)
 	}
+}
+
+func (bc *Blockchain) ReplaceChain(newChain []Block) error {
+	// Check if the new chain is longer than the current chain
+	if len(newChain) > len(bc.Chain) {
+		// Check if the new chain is valid
+		if !isValidChain(newChain) {
+			return errors.New("received invalid chain")
+		}
+		// Replace the current chain with the new chain
+		bc.Chain = newChain
+	} else {
+		return errors.New("blockchain up to date, chains are same length")
+	}
+	return nil
 }

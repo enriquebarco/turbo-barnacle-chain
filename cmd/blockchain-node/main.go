@@ -19,7 +19,7 @@ func main() {
 	bc := blockchain.CreateBlockchain(2)
 
 	// Start the P2P server on the specified port, this all deals with incoming connections
-	go p2p.StartServer(*localPort, *localNodeName, &bc)
+	go p2p.StartServer(*localPort, *localNodeName, *remoteNodeIP, &bc)
 
 	// Connect to the IP addressed that was specified and say hello
 	go p2p.ConnectToNode(*remoteNodeIP, *localNodeName, "REQUEST_CHAIN", fmt.Sprintf("Hello from node %s!", *remoteNodeIP))

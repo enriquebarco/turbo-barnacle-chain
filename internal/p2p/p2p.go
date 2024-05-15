@@ -20,7 +20,7 @@ type TransactionMessage struct {
 }
 
 // StartServer starts the P2P server and listens for incoming connections.
-func StartServer(localPort string, nodeName string, bc *blockchain.Blockchain) {
+func StartServer(localPort, nodeName, remoteNodeIP string, bc *blockchain.Blockchain) {
 	ln, err := net.Listen("tcp", ":"+localPort)
 	if err != nil {
 		log.Fatal(err)
@@ -37,12 +37,12 @@ func StartServer(localPort string, nodeName string, bc *blockchain.Blockchain) {
 		}
 
 		// we create a new go routine so that we can handle multiple connections simultaneously, each independent from the others.
-		go handleConnection(conn, bc, nodeName, localPort)
+		go handleConnection(conn, bc, nodeName, remoteNodeIP)
 	}
 }
 
 // handleConnection deals with incoming data.
-func handleConnection(conn net.Conn, bc *blockchain.Blockchain, nodeName, knownPort string) {
+func handleConnection(conn net.Conn, bc *blockchain.Blockchain, nodeName, remoteNodeIP string) {
 	defer conn.Close()
 	// log.Printf("New connection established from %s\n", nodeName)
 
@@ -79,16 +79,27 @@ func handleConnection(conn net.Conn, bc *blockchain.Blockchain, nodeName, knownP
 				return
 			}
 			fmt.Println("Sending blockchain to remote node...")
-			remoteAddr := conn.RemoteAddr().String()
-			host, _, err := net.SplitHostPort(remoteAddr)
-			if err != nil {
-				log.Printf("Failed to split remote address: %v\n", err)
-				return
-			}
-			nodeAddress := net.JoinHostPort(host, knownPort)
-			if err := ConnectToNode(nodeAddress, nodeName, "RECIEVE_CHAIN", string(chainJson)); err != nil {
+			if err := ConnectToNode(remoteNodeIP, nodeName, "RECEIVE_CHAIN", string(chainJson)); err != nil {
 				log.Printf("Failed to send blockchain: %v\n", err)
 			}
+
+		case "RECEIVE_CHAIN":
+			fmt.Println("Received blockchain from remote node")
+			var newChain []blockchain.Block
+			err := json.Unmarshal([]byte(message), &newChain)
+			if err != nil {
+				log.Printf("Failed to unmarshal blockchain: %v\n", err)
+				return
+			}
+			err = bc.ReplaceChain(newChain)
+			if err != nil {
+				log.Printf("Failed to replace chain: %v\n", err)
+			} else {
+				fmt.Println("Blockchain replaced with the received chain")
+				fmt.Println("Current Blockchain:")
+				bc.PrintChain()
+			}
+
 		case "RECIEVE_BLOCK":
 			var newBlock blockchain.Block
 			err := json.Unmarshal([]byte(message), &newBlock)
