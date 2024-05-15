@@ -80,7 +80,7 @@ func handleConnection(conn net.Conn, bc *blockchain.Blockchain, nodeName, remote
 			}
 			fmt.Println("Sending blockchain to remote node...")
 			if err := ConnectToNode(remoteNodeIP, nodeName, "RECEIVE_CHAIN", string(chainJson)); err != nil {
-				log.Printf("Failed to send blockchain: %v\n", err)
+				log.Printf("Blockchain rejected: %v\n", err)
 			}
 
 		case "RECEIVE_CHAIN":
