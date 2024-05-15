@@ -38,7 +38,7 @@ go run . -port 3001 -connect localhost:3000 -name secondNode
 
 ## Blockchain 
 
-This simple blockchain uses Proof of Work (PoW) as its consensus mechanism. During mining, the nonce is incremented until the block's hash meets the difficulty requirement, ensuring computational effort is required to add a new block, thus enhancing security.
+This simple blockchain uses Proof of Work (PoW) as its consensus mechanism. During mining, the nonce is incremented until the block's hash meets the difficulty requirement, ensuring computational effort is required to add a new block.
 
 ### Creating and sending blocks
 
