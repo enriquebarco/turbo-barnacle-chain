@@ -3,6 +3,7 @@ package blockchain
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -11,23 +12,23 @@ import (
 
 type Block struct {
 	Data         map[string]interface{}
-	hash         string
-	previousHash string
-	timestamp    time.Time
-	nonce        int
+	Hash         string
+	PreviousHash string
+	Timestamp    time.Time
+	Nonce        int
 }
 
 type Blockchain struct {
-	genesisBlock Block
+	GenesisBlock Block
 	Chain        []Block
-	difficulty   int
+	Difficulty   int
 }
 
 func (b Block) calculateHash() string {
 	// convert block data into json
 	data, _ := json.Marshal(b.Data)
 	// Concatenate the previous block’s hash, and the current block’s data, timestamp, and nonce
-	blockData := b.previousHash + string(data) + b.timestamp.String() + strconv.Itoa(b.nonce)
+	blockData := b.PreviousHash + string(data) + b.Timestamp.UTC().String() + strconv.Itoa(b.Nonce)
 	// hash with sha256 algo
 	blockHash := sha256.Sum256([]byte(blockData))
 	// return the base 16 hash as a string
@@ -36,17 +37,17 @@ func (b Block) calculateHash() string {
 
 func (b *Block) mine(difficulty int) {
 	// continue to change the proof of work value of the current block until we satisfiy our mining condition of (starting zeros > difficulty)
-	for !strings.HasPrefix(b.hash, strings.Repeat("0", difficulty)) {
-		b.nonce++
-		b.hash = b.calculateHash()
+	for !strings.HasPrefix(b.Hash, strings.Repeat("0", difficulty)) {
+		b.Nonce++
+		b.Hash = b.calculateHash()
 	}
 }
 
 // create the genesis block
 func CreateBlockchain(difficulty int) Blockchain {
 	genesisBlock := Block{
-		hash:      "0 Hello Mel",
-		timestamp: time.Now(),
+		Hash:      "0 Hello Mel",
+		Timestamp: time.Now().UTC(),
 	}
 	return Blockchain{
 		genesisBlock,
@@ -67,12 +68,22 @@ func (b *Blockchain) AddBlock(from, to string, amount float64) {
 	lastBlock := b.Chain[len(b.Chain)-1]
 	newBlock := Block{
 		Data:         blockData,
-		previousHash: lastBlock.hash,
-		timestamp:    time.Now(),
+		PreviousHash: lastBlock.Hash,
+		Timestamp:    time.Now().UTC(),
 	}
 	// mine the new block with the previous block hash, current block data, and generated nonce
-	newBlock.mine(b.difficulty)
+	newBlock.mine(b.Difficulty)
 	b.Chain = append(b.Chain, newBlock)
+}
+
+// recieiving blocks from other nodes
+func (bc *Blockchain) ReceiveBlock(newBlock Block) error {
+	err := isValidNewBlock(newBlock, bc.Chain[len(bc.Chain)-1])
+	if err != nil {
+		return fmt.Errorf("failed to validate new block: %w", err)
+	}
+	bc.Chain = append(bc.Chain, newBlock)
+	return nil
 }
 
 // check the validity of the blockchain. No transactions should be tampered with
@@ -84,7 +95,7 @@ func (b *Blockchain) isValid() bool {
 		// first, recalculate the hash of the block and compare it to the stored hash value
 		// second, check if the previous hash value saved in this block is equal to its previous hash
 		// if a block has been tampered with, this check willf fail since the hash will change
-		if currentBlock.hash != currentBlock.calculateHash() || currentBlock.previousHash != previousBlock.hash {
+		if currentBlock.Hash != currentBlock.calculateHash() || currentBlock.PreviousHash != previousBlock.Hash {
 			return false
 		}
 	}
@@ -92,19 +103,25 @@ func (b *Blockchain) isValid() bool {
 }
 
 // check the validity of a new block
-func IsValidNewBlock(newBlock, previousBlock Block) bool {
+func isValidNewBlock(newBlock, previousBlock Block) error {
 	// Check if the previous hash matches
-	if previousBlock.hash != newBlock.previousHash {
-		return false
+	if previousBlock.Hash != newBlock.PreviousHash {
+		return errors.New("previous hash does not match")
 	}
 
 	// Check if the hash of the new block is correct
-	if newBlock.hash != newBlock.calculateHash() {
-		return false
+	if newBlock.Hash != newBlock.calculateHash() {
+		return errors.New("block hash is invalid")
 	}
 
-	return true
+	return nil
 }
 
-// TODO: implement a consensus algorithm
-// TODO: create security countermeasures
+func (bc *Blockchain) PrintChain() {
+	for i, block := range bc.Chain {
+		if i == 0 {
+			continue // Skip the genesis block
+		}
+		fmt.Printf("Transaction: %v, Nonce: %d\n", block.Data, block.Nonce)
+	}
+}

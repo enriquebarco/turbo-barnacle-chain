@@ -2,6 +2,7 @@ package p2p
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -16,32 +17,6 @@ type TransactionMessage struct {
 	From   string  `json:"from"`
 	To     string  `json:"to"`
 	Amount float64 `json:"amount"`
-}
-
-type Command struct {
-	Execute func(args []string, bc *blockchain.Blockchain, conn net.Conn)
-}
-
-var userCommands = map[string]Command{
-	"send": {
-		Execute: func(args []string, bc *blockchain.Blockchain, conn net.Conn) {
-			if len(args) != 3 {
-				fmt.Println("Usage: send <from> <to> <amount>")
-				return
-			}
-			amount, err := strconv.ParseFloat(args[2], 64)
-			if err != nil {
-				fmt.Println("Invalid amount:", args[2])
-				return
-			}
-			// Format the message as a transaction
-			message := fmt.Sprintf("TXN:%s,%s,%f", args[0], args[1], amount)
-			if conn != nil {
-				fmt.Fprintf(conn, "%s\n", message)
-			}
-		},
-	},
-	// add more commands as needed
 }
 
 // StartServer starts the P2P server and listens for incoming connections.
@@ -87,31 +62,23 @@ func handleConnection(conn net.Conn, bc *blockchain.Blockchain) {
 
 		fmt.Printf("\033[32m%s: %s\033[0m\n", senderName, message)
 		// detect if a user has sent a valid txn, add it to the blockchain
-		if strings.HasPrefix(message, "TXN:") {
-			// check that a valid transaction happened on the chain by checking the chain is still valid
-			// print the entire block chain
-			parts := strings.Split(message[4:], ",")
-			if len(parts) == 3 {
-				from := parts[0]
-				to := parts[1]
-				amount, err := strconv.ParseFloat(parts[2], 64)
-				if err == nil {
-					bc.AddBlock(from, to, amount)
-					fmt.Println("New block received and added to the blockchain")
-					fmt.Printf("From: %s, To: %s, Amount: %f\n", from, to, amount)
-					log.Printf("Block added for transaction from %s to %s of %f", from, to, amount)
-
-					fmt.Println("Current Blockchain:")
-					for i, block := range bc.Chain {
-						if i == 0 {
-							continue // Skip the genesis block
-						}
-						fmt.Printf("Data: %v\n", block.Data)
-					}
-					continue
-				}
+		if strings.HasPrefix(message, "BLOCK:") {
+			blockJson := message[6:]
+			var newBlock blockchain.Block
+			err := json.Unmarshal([]byte(blockJson), &newBlock)
+			if err != nil {
+				log.Printf("Failed to unmarshal block: %v\n", err)
+				return
 			}
-			log.Println("Invalid transaction format")
+			err = bc.ReceiveBlock(newBlock)
+			if err != nil {
+				log.Printf("Failed to receive block: %v\n", err)
+			} else {
+				fmt.Println("New block added to the blockchain")
+				fmt.Printf("From: %s, To: %s, Amount: %f\n", newBlock.Data["from"], newBlock.Data["to"], newBlock.Data["amount"])
+				fmt.Println("Current Blockchain:")
+				bc.PrintChain()
+			}
 		}
 	}
 }
@@ -162,18 +129,20 @@ func HandleUserInput(bc *blockchain.Blockchain, nodeAddress string, nodeName str
 				// Add the block to the local blockchain
 				bc.AddBlock(from, to, amount)
 				fmt.Println("New block added to the blockchain")
-				fmt.Printf("From: %s, To: %s, Amount: %f\n", from, to, amount)
 				fmt.Println("Current Blockchain:")
-				for i, block := range bc.Chain {
-					if i == 0 {
-						continue // Skip the genesis block
-					}
-					fmt.Printf("Data: %v\n", block.Data)
+				bc.PrintChain()
+				// get the new block and broadcast it to the connected node
+				lastBlock := bc.Chain[len(bc.Chain)-1]
+
+				blockJson, err := json.Marshal(lastBlock)
+				if err != nil {
+					fmt.Println("Error marshalling block to JSON:", err)
+					return
 				}
 
-				// Broadcast the new block to the connected node
 				if nodeAddress != "" {
-					message := fmt.Sprintf("TXN:%s,%s,%f", from, to, amount)
+					fmt.Println("Broadcasting new block to the network...")
+					message := fmt.Sprintf("BLOCK:%s", blockJson)
 					ConnectToNode(nodeAddress, nodeName, message)
 				}
 				continue
