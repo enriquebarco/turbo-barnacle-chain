@@ -46,7 +46,7 @@ Then, open up another terminal at the root directory of the project and run:
 
 ## p2p
 
-The P2P network implementation involves nodes connecting via TCP connections. Each message is sent over a new TCP connection, which is closed after the message is transmitted.
+The P2P network implementation involves nodes connecting via TCP connections. Each message is sent over a new TCP connection, which is closed after the message is transmitted. The app allows messaging of any kind, and only taps into the blockchain with a specified command that is discussed in more detail below.
 
 ## Blockchain 
 
