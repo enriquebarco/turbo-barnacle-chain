@@ -7,6 +7,12 @@ A p2p network that allows users to chat. In the process of integrating a simple 
 ## Installation
 Ensure you have Go installed on your machine. If not, make follow the instructions of the [official documentation](https://go.dev/doc/install)
 
+1. Clone the repo either through ssh or https
+2. Create a build
+```bash
+go build -o turbo-barnacle-chain ./cmd/blockchain-node
+```
+
 ## Running the process
 
 1. This is a basic p2p app, so connecting to peers is a bit rudimentary. You need to specify a couple of flags to make this happen and include: 
@@ -21,19 +27,16 @@ Ensure you have Go installed on your machine. If not, make follow the instructio
 
 3. After cloning the repo, run the main function
 ```bash
-cd cmd/blockchain-node/
-go run . -port 3000 -name firstNode -connect <YourFriendsIPAddress>:3000
+./turbo-barnacle-chain -port 3000 -name firstNode -connect <YourFriendsIPAddress>:3000
 ```
 
 3. (Optional) If you want to test out how two nodes would connect locally, open up a new terminal and run the following bash script in the root directory of the project:
 ```bash
-cd cmd/blockchain-node/
-go run . -port 3000 -name firstNode -connect localhost:3001
+./turbo-barnacle-chain -port 3000 -name firstNode -connect localhost:3001
 ```
 Then, open up another terminal at the root directory of the project and run:
 ```bash
-cd cmd/blockchain-node/
-go run . -port 3001 -connect localhost:3000 -name secondNode
+./turbo-barnacle-chain -port 3001 -connect localhost:3000 -name secondNode
 ```
 
 ## p2p
