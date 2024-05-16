@@ -30,7 +30,7 @@ go build -o turbo-barnacle-chain ./cmd/blockchain-node
  ip=$(ifconfig en0 | grep inet | grep -v inet6 | awk '{print $2}'); echo $ip; echo $ip | pbcopy
 ```
 
-3. After cloning the repo, run the main function
+3. After cloning the repo and running the build
 ```bash
 ./turbo-barnacle-chain -port 3000 -name firstNode -connect <YourFriendsIPAddress>:3000
 ```
