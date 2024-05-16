@@ -62,9 +62,34 @@ Then, open up another terminal at the root directory of the project and run:
 
 The P2P network implementation involves nodes connecting via TCP connections. Each message is sent over a new TCP connection, which is closed after the message is transmitted. The app allows messaging of any kind, and only taps into the blockchain with a specified command that is discussed in more detail below.
 
+> The application supports basic chats between the nodes. For example:
+> ```bash
+> secondNode [MESSAGE]: hey!
+> How are you doing today?
+> secondNode [MESSAGE]: Good! thanks
+> ```
+
+
 ## Blockchain 
 
 This simple blockchain uses Proof of Work (PoW) as its consensus mechanism. During mining, the nonce is incremented until the block's hash meets the difficulty requirement, ensuring computational effort is required to add a new block.
+
+### Requesting and updating to the latest blockchain
+
+When a node goes online, it will automatically request the latest blockchain in the network. When it gets the blockchain back, it will validate it and add replace the local blockchain if necessary
+
+> Here is an example of a node updating its blockchain:
+> ```bash
+> 2024/05/16 11:35:02 Listening for P2P connections on 3001...
+> # marshaled chain has been truncated for the example
+> firstNode [RECEIVE_CHAIN]: [{"Data":null,"Hash":"0 Hello Mel","PreviousHash":"","Timestamp":"2024-05-16T15:26:53.56527Z","Nonce":0},{"Data":{"amount":10,"from":"mel","to":"kike"}...
+> Received blockchain from remote node
+> Blockchain replaced with the received chain
+> Current Blockchain:
+> Transaction: map[amount:10 from:mel to:kike], Nonce: 60
+> Transaction: map[amount:120 from:jamil to:juan], Nonce: 489
+> Transaction: map[amount:236 from:mel to:kike], Nonce: 197
+> ```
 
 ### Creating and sending blocks
 
