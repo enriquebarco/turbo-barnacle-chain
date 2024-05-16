@@ -3,12 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/enriquebarco/turbo-barnacle-chain/internal/blockchain"
 	"github.com/enriquebarco/turbo-barnacle-chain/internal/p2p"
 )
 
 func main() {
+	asciiArtPath := "cmd/blockchain-node/ascii_art.txt"
+	asciiArt, _ := os.ReadFile(asciiArtPath)
+	fmt.Println(string(asciiArt))
 	// Parse command-line arguments
 	localNodeName := flag.String("name", "Node", "the name you identify with")
 	localPort := flag.String("port", "3000", "port to listen on")
