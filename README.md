@@ -44,6 +44,20 @@ Then, open up another terminal at the root directory of the project and run:
 ./turbo-barnacle-chain -port 3001 -connect localhost:3000 -name secondNode
 ```
 
+
+> If all went well, you will see the following print statement:
+> ```bash
+> ./turbo-barnacle-chain -port 3000 -name firstNode -connect localhost:3001
+>  _____             _                   ______                                   _                _____  _             _
+> |_   _|           | |                  | ___ \                                 | |              /  __ \| |           (_)
+>   | | _   _  _ __ | |__    ___  ______ | |_/ /  __ _  _ __  _ __    __ _   ___ | |  ___  ______ | /  \/| |__    __ _  _  _ __> 
+>   | || | | || '__|| '_ \  / _ \|______|| ___ \ / _` || '__|| '_ \  / _` | / __|| | / _ \|______|| |    | '_ \  / _` || || '_ \
+>   | || |_| || |   | |_) || (_) |       | |_/ /| (_| || |   | | | || (_| || (__ | ||  __/        | \__/\| | | || (_| || || | | |
+>   \_/ \__,_||_|   |_.__/  \___/        \____/  \__,_||_|   |_| |_| \__,_| \___||_| \___|         \____/|_| |_| \__,_||_||_| |_|
+>
+> 2024/05/16 11:26:53 Listening for P2P connections on 3000...
+
+
 ## p2p
 
 The P2P network implementation involves nodes connecting via TCP connections. Each message is sent over a new TCP connection, which is closed after the message is transmitted. The app allows messaging of any kind, and only taps into the blockchain with a specified command that is discussed in more detail below.
