@@ -27,7 +27,7 @@ go build -o turbo-barnacle-chain ./cmd/blockchain-node
 
 2. You need to copy and share your IP address with the node who wants to connect with you. This can easily be done by running the following command in the terminal (for Mac)
 ```bash
- ip=$(ifconfig en0 | grep inet | grep -v inet6 | awk '{print $2}'); echo $ip; echo $ip | pbcopy
+ip=$(curl -s ifconfig.me); echo $ip; echo $ip | pbcopy
 ```
 
 3. After cloning the repo and running the build
