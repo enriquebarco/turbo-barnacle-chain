@@ -7,6 +7,8 @@ A p2p network that allows users to chat. In the process of integrating a simple 
 ## Installation
 Ensure you have Go installed on your machine. If not, make follow the instructions of the [official documentation](https://go.dev/doc/install)
 
+If you are connecting to nodes outside of your local network, you will need to create a tunnel with Ngrok, make sure you install / create an account / authenticate. All the necessary steps are [here](https://dashboard.ngrok.com/signup)
+
 1. Clone the repo either through ssh or https
 ```bash
 # the following example is for ssh
@@ -20,11 +22,68 @@ go build -o turbo-barnacle-chain ./cmd/blockchain-node
 
 ## Running the process
 
-1. This is a basic p2p app, so connecting to peers is a bit rudimentary. You need to specify a couple of flags to make this happen and include: 
-- -port <the port your node will live and the application will run>
-- -name <the name your node will identify as>
-- -connect<ip:port> (the IP address of the node you wish to connect to, along with the specified port the process is running)
+This is a basic p2p app, so connecting to peers is a bit rudimentary. You need to specify a couple of flags to make this happen and include: 
+> - -port <the port your node will live and the application will run>
+> - -name <the name your node will identify as>
+> - -connect<ip:port> (the IP address of the node you wish to connect to, along with the specified port the process is running)
 
+### Connecting to external nodes
+A tcp connection works by specifying a private IP address and a port. However, when nodes are on different networks, it is not possible to connect to a private IP as only the public IP is exposed. A public IP is actually the router's IP and therefore, in order for this application to work we would need to expose a specific port to external connections and then forward connections to the private IP. This is how Bitcoin Core software works (port 8333 is exposed and forwards connections to local nodes). However, for the scope of this project, it is too much to ask users to tamper with their router settings. Therefore, we are using **Ngrok** a secure unified ingress platform to create a tunnel between the nodes.
+
+Please follow these steps to create a tunnel, run the process, and connect with other nodes
+
+1. Create a tunnel 
+```bash
+# 3000 in this example is the port we are going to create the tunnel on
+ngrok tcp 3000
+
+# expected response
+Full request capture now available in your browser: https://ngrok.com/r/ti
+
+Session Status                online
+Account                       Enrique Barco (Plan: Free)
+Version                       3.9.0
+Region                        United States (us)
+Web Interface                 http://127.0.0.1:4040
+Forwarding                    tcp://4.tcp.ngrok.io:15925 -> localhost:3000
+
+Connections                   ttl     opn     rt1     rt5     p50     p90
+                              0       0       0.00    0.00    0.00    0.00
+```
+
+> Ngrok tunnel can be stopped at any time by killing the process, this should always be done at the end of sessions for security reasons.
+
+2. Share the forwarding url (which will act as an IP address) to the node who will connect with you
+
+> Following the example above, this URL will be `4.tcp.ngrok.io:15925`. **NOTE: you need to remove tcp://**
+
+3. Once both nodes have created tunnels, run the application specifying the correct flags
+
+For example:
+
+> FirstNode:
+> ```bash
+> ./turbo-barnacle-chain -port 3000 -name firstNode -connect 4.tcp.ngrok.io:15925
+> ```
+
+> SecondNode:
+> ```bash
+> ./turbo-barnacle-chain -port 3000 -name firstNode -connect <FORWARDING_URL>
+> ```
+
+> If all went well, you will see the following print statement:
+> ```bash
+>  _____             _                   ______                                   _                _____  _             _
+> |_   _|           | |                  | ___ \                                 | |              /  __ \| |           (_)
+>   | | _   _  _ __ | |__    ___  ______ | |_/ /  __ _  _ __  _ __    __ _   ___ | |  ___  ______ | /  \/| |__    __ _  _  _ __> 
+>   | || | | || '__|| '_ \  / _ \|______|| ___ \ / _` || '__|| '_ \  / _` | / __|| | / _ \|______|| |    | '_ \  / _` || || '_ \
+>   | || |_| || |   | |_) || (_) |       | |_/ /| (_| || |   | | | || (_| || (__ | ||  __/        | \__/\| | | || (_| || || | | |
+>   \_/ \__,_||_|   |_.__/  \___/        \____/  \__,_||_|   |_| |_| \__,_| \___||_| \___|         \____/|_| |_| \__,_||_||_| |_|
+>
+> 2024/05/16 11:26:53 Listening for P2P connections on 3000...
+
+
+### Testing locally on the same machine
 2. You need to copy and share your IP address with the node who wants to connect with you. This can easily be done by running the following command in the terminal (for Mac)
 ```bash
 ip=$(curl -s ifconfig.me); echo $ip; echo $ip | pbcopy
@@ -35,27 +94,14 @@ ip=$(curl -s ifconfig.me); echo $ip; echo $ip | pbcopy
 ./turbo-barnacle-chain -port 3000 -name firstNode -connect <YourFriendsIPAddress>:3000
 ```
 
-3. (Optional) If you want to test out how two nodes would connect locally, open up a new terminal and run the following bash script in the root directory of the project:
+3. **(Optional)** If you want to test out how two nodes would connect locally, open up a new terminal and run the following bash script in the root directory of the project:
 ```bash
 ./turbo-barnacle-chain -port 3000 -name firstNode -connect localhost:3001
 ```
 Then, open up another terminal at the root directory of the project and run:
 ```bash
-./turbo-barnacle-chain -port 3001 -connect localhost:3000 -name secondNode
+./turbo-barnacle-chain -port 3001 -name secondNode -connect localhost:3000
 ```
-
-
-> If all went well, you will see the following print statement:
-> ```bash
-> ./turbo-barnacle-chain -port 3000 -name firstNode -connect localhost:3001
->  _____             _                   ______                                   _                _____  _             _
-> |_   _|           | |                  | ___ \                                 | |              /  __ \| |           (_)
->   | | _   _  _ __ | |__    ___  ______ | |_/ /  __ _  _ __  _ __    __ _   ___ | |  ___  ______ | /  \/| |__    __ _  _  _ __> 
->   | || | | || '__|| '_ \  / _ \|______|| ___ \ / _` || '__|| '_ \  / _` | / __|| | / _ \|______|| |    | '_ \  / _` || || '_ \
->   | || |_| || |   | |_) || (_) |       | |_/ /| (_| || |   | | | || (_| || (__ | ||  __/        | \__/\| | | || (_| || || | | |
->   \_/ \__,_||_|   |_.__/  \___/        \____/  \__,_||_|   |_| |_| \__,_| \___||_| \___|         \____/|_| |_| \__,_||_||_| |_|
->
-> 2024/05/16 11:26:53 Listening for P2P connections on 3000...
 
 
 ## p2p
