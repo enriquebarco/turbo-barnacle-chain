@@ -38,7 +38,9 @@ Please follow these steps to create a tunnel, run the process, and connect with 
 ```bash
 # 3000 in this example is the port we are going to create the tunnel on
 ngrok tcp 3000
+```
 
+```bash
 # expected response
 Full request capture now available in your browser: https://ngrok.com/r/ti
 
