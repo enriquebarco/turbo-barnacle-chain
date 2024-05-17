@@ -7,7 +7,7 @@ A p2p network that allows users to chat. In the process of integrating a simple 
 ## Installation
 Ensure you have Go installed on your machine. If not, make follow the instructions of the [official documentation](https://go.dev/doc/install)
 
-If you are connecting to nodes outside of your local network and do not want to use port forwarding, you will need to create a tunnel with Ngrok, make sure you install / create an account / authenticate. All the necessary steps are [here](https://dashboard.ngrok.com/signup)
+If you are connecting to nodes outside of your local network and do not want to set up port forwarding, you will need to create a tunnel with Ngrok, make sure you install / create an account / authenticate. All the necessary steps are [here](https://dashboard.ngrok.com/signup)
 
 1. Clone the repo either through ssh or https
 ```bash
