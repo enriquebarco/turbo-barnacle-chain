@@ -7,7 +7,7 @@ A p2p network that allows users to chat. In the process of integrating a simple 
 ## Installation
 Ensure you have Go installed on your machine. If not, make follow the instructions of the [official documentation](https://go.dev/doc/install)
 
-If you are connecting to nodes outside of your local network and do not want to set up port forwarding, you will need to create a tunnel with Ngrok, make sure you install / create an account / authenticate. All the necessary steps are [here](https://dashboard.ngrok.com/signup)
+If you are connecting to nodes outside of your local network and do not want to set up port forwarding, you will need to create a tunnel with Ngrok. Make sure you install / create an account / authenticate. All the necessary steps can be found [here](https://dashboard.ngrok.com/signup)
 
 1. Clone the repo either through ssh or https
 ```bash
@@ -28,7 +28,7 @@ This is a basic p2p app, so connecting to peers is a bit rudimentary. You need t
 > - -connect<ip:port> (the IP address of the node you wish to connect to, along with the specified port the process is running)
 
 ### Connecting to external nodes
-A tcp connection works by specifying a private IP address and a port. However, when nodes are on different networks, it is not possible to connect to a private IP as only the public IP is exposed. A public IP is actually the router's IP and therefore, in order for this application to work we would need to expose a specific port to external connections and then forward connections to the private IP. This is how Bitcoin Core software works (port 8333 is exposed and forwards connections to local nodes). However, for the scope of this project, it is too much to ask users to tamper with their router settings. Therefore, we are using **Ngrok** a secure unified ingress platform to create a tunnel between the nodes.
+A tcp connection works by specifying a private IP address and a port. However, when nodes are on different networks, it is not possible to connect to a private IP as only the public IP is exposed for security reasons. Since a public IP is actually just a router IP, in order for this application to work we would need to expose a specific port to external connections and then forward connections to the private IP. This is how Bitcoin Core software works (port 8333 is exposed and forwards connections to local nodes). However, for the scope of this project, it is too complicated to ask users to tamper with their router settings. Therefore, we are going to use **Ngrok** - a secure unified ingress platform - to create a secure tunnel between the nodes.
 
 Please follow these steps to create a tunnel, run the process, and connect with other nodes
 
@@ -53,11 +53,11 @@ Connections                   ttl     opn     rt1     rt5     p50     p90
                               0       0       0.00    0.00    0.00    0.00
 ```
 
-> Ngrok tunnel can be stopped at any time by killing the process, this should always be done at the end of sessions for security reasons.
+> Ngrok tunnel can be stopped at any time by killing the process, this should always be done at the end of a session for security reasons.
 
 2. Share the forwarding url (which will act as an IP address) to the node who will connect with you
 
-> Following the example above, this URL will be `4.tcp.ngrok.io:15925`. **NOTE: you need to remove tcp://**
+> Following the example above, this URL would be `4.tcp.ngrok.io:15925`. **NOTE: you NEED to remove 'tcp://' from the forwarding url** 
 
 3. Once both nodes have created tunnels, run the application specifying the correct flags
 
@@ -70,7 +70,7 @@ For example:
 
 > SecondNode:
 > ```bash
-> ./turbo-barnacle-chain -port 3000 -name firstNode -connect <FORWARDING_URL>
+> ./turbo-barnacle-chain -port 3000 -name secondNode -connect <FORWARDING_URL>
 > ```
 
 > If all went well, you will see the following print statement:
@@ -85,18 +85,21 @@ For example:
 > 2024/05/16 11:26:53 Listening for P2P connections on 3000...
 
 
-### Testing locally on the same machine
-2. You need to copy and share your IP address with the node who wants to connect with you. This can easily be done by running the following command in the terminal (for Mac)
+### Connecting with local nodes (on the same network)
+
+1. You need to copy and share your private IP address with the node who wants to connect with you. This can easily be done by running the following command in the terminal (for Mac)
 ```bash
-ip=$(curl -s ifconfig.me); echo $ip; echo $ip | pbcopy
+ip=$(ifconfig en0 | grep inet | grep -v inet6 | awk '{print $2}'); echo $ip; echo $ip | pbcopy
 ```
 
-3. After cloning the repo and running the build
+2. After cloning the repo and running the build
 ```bash
 ./turbo-barnacle-chain -port 3000 -name firstNode -connect <YourFriendsIPAddress>:3000
 ```
 
-3. **(Optional)** If you want to test out how two nodes would connect locally, open up a new terminal and run the following bash script in the root directory of the project:
+### Testing on a local machine
+
+If you want to test out how two nodes would connect locally, open up a new terminal and run the following bash script in the root directory of the project:
 ```bash
 ./turbo-barnacle-chain -port 3000 -name firstNode -connect localhost:3001
 ```
