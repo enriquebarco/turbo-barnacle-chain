@@ -9,6 +9,8 @@ Ensure you have Go installed on your machine. If not, make follow the instructio
 
 If you are connecting to nodes outside of your local network, you will need to create a tunnel with Ngrok, make sure you install / create an account / authenticate. All the necessary steps are [here](https://dashboard.ngrok.com/signup)
 
+Once Go and Ngrok have been installed:
+
 1. Clone the repo either through ssh or https
 ```bash
 # the following example is for ssh
