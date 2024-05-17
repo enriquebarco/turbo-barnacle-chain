@@ -92,7 +92,7 @@ For example:
 ip=$(ifconfig en0 | grep inet | grep -v inet6 | awk '{print $2}'); echo $ip; echo $ip | pbcopy
 ```
 
-2. After cloning the repo and running the build
+2. Once the node has shared their private IP run
 ```bash
 ./turbo-barnacle-chain -port 3000 -name firstNode -connect <YourFriendsIPAddress>:3000
 ```
