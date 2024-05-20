@@ -34,7 +34,7 @@ This is how Bitcoin Core software works (a router's port 8333 is setup to port f
 
 However, for the scope of this project, it is too complicated to ask users to tamper with their router settings. Therefore, we are going to use **Ngrok** - a secure unified ingress platform - to create a secure tunnel between the nodes.
 
-Please follow these steps to create a tunnel, run the process, and connect with other nodes
+Please follow these steps to create a tunnel, swap forwarding urls with your friends, and run the process to connect with them 
 
 1. Create a tunnel 
 ```bash
