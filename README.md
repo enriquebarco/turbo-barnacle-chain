@@ -28,7 +28,11 @@ This is a basic p2p app, so connecting to peers is a bit rudimentary. You need t
 > - -connect<ip:port> (the IP address of the node you wish to connect to, along with the specified port the process is running)
 
 ### Connecting to external nodes
-A tcp connection works by specifying a private IP address and a port. However, when nodes are on different networks, it is not possible to connect to a private IP as only the public IP is exposed for security reasons. Since a public IP is actually just a router's IP, in order for this application to work, we would need to expose a port on the router to external connections and then port forward connections to the private IP. This is how Bitcoin Core software works (port 8333 is exposed and forwards connections to local nodes). However, for the scope of this project, it is too complicated to ask users to tamper with their router settings. Therefore, we are going to use **Ngrok** - a secure unified ingress platform - to create a secure tunnel between the nodes.
+A tcp connection works by specifying a private IP address and a port. However, when nodes are on different networks, it is not possible to connect to a private IP as only the public IP is exposed for security reasons. Since a public IP is actually just a router's IP, in order for this application to work, we would need to expose a port on the router to external connections and then port forward connections to the node's private IP. 
+
+This is how Bitcoin Core software works (a router's port 8333 is setup to port forward connections to the local nodes). 
+
+However, for the scope of this project, it is too complicated to ask users to tamper with their router settings. Therefore, we are going to use **Ngrok** - a secure unified ingress platform - to create a secure tunnel between the nodes.
 
 Please follow these steps to create a tunnel, run the process, and connect with other nodes
 
