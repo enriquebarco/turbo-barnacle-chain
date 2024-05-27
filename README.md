@@ -1,5 +1,5 @@
 # turbo-barnacle-chain
-A p2p network that allows users to chat. In the process of integrating a simple blockchain
+A p2p network that allows users to chat. This app has a blockchain integration that allows nodes to send transactions.
 
 ![turbo-barnacle-chain](./turbo-barnacle-chain.webp)
 
